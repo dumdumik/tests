@@ -1,69 +1,72 @@
-describe('Поиск и фильтрация вакансий', () => {
-    beforeEach(() => {
-        cy.visit('/vacancies');
+describe('просмотр страницы с потребностями (с поиском и фильтром)', () => {
+
+
+    it('НЕРАЗБОРЧИВЫЙ ТЕКСТ, НИЧЕГО НЕ НАЙДЕНО ', () => {
+        cy.viewport(1920, 1080)
+        cy.log('Вход на страницу под аккаунтом работодателя')
+        cy.visit('https://dev.profteam.su/login');
+        cy.get('input[type="text"]').type('testerEmployer');
+        cy.get('input[type="password"]').type('Password1');
+        cy.get('#app > div.page > div > section > form > div.form__buttons > div:nth-child(3) > button').click({timeout:2000})
+
+        cy.log('Переход во вкладку с потребностями для просмотра')
+        cy.visit('https://dev.profteam.su/needs')
+
+        cy.log('ввод в поиск название нужной потребности')
+        cy.get('#app > div.page > div > section > div > div.needs-block__needs-filters-wrapper > div.needs-block__filters-wrapper > div > div.filters-block__filter-list > div.search-input > div > input')
+            .click()
+            .type('SDFOPFDFDFSSS')
+
+        cy.log('нажатие на кнопку лупы для нахождения')
+        cy.get('#app > div.page > div > section > div > div.needs-block__needs-filters-wrapper > div.needs-block__filters-wrapper > div > div.filters-block__filter-list > div.search-input > div > button')
+            .click({timeout:2000})
+
+        cy.log('потребности не найдены')
     });
 
-    it('Поиск вакансии по названию', () => {
-        cy.get('[data-testid="search-input"]').type('Разработчик');
-        cy.wait(1000); // Ожидание загрузки результатов
-        cy.get('[data-testid="vacancy-card"]').should('have.length.gt', 0);
-        cy.get('[data-testid="vacancy-title"]').first().should('contain', 'Разработчик');
-    });
+    it('просмотр страницы с потребностями (с поиском и фильтром)', () => {
+        cy.viewport(1920, 1080)
+        cy.log('Вход на страницу под аккаунтом работодателя')
+        cy.visit('https://dev.profteam.su/login');
+        cy.get('input[type="text"]').type('testerEmployer');
+        cy.get('input[type="password"]').type('Password1');
+        cy.get('#app > div.page > div > section > form > div.form__buttons > div:nth-child(3) > button').click({timeout:2000})
 
-    it('Фильтрация по типу занятости', () => {
-        cy.get('[data-testid="employment-type-filter"]').select('Дистант');
-        cy.wait(1000);
-        cy.get('[data-testid="employment-type"]').each($el => {
-            expect($el.text()).to.contain('Дистант');
-        });
-    });
-    it('Поиск с учетом регистра символов', () => {
-        cy.get('[data-testid="search-input"]').type('разРАБотчик');
-        cy.get('[data-testid="vacancy-card"]').should('have.length.gt', 0);
-    });
+        cy.log('Переход во вкладку с потребностями для просмотра')
+        cy.visit('https://dev.profteam.su/needs')
 
-    it('Фильтрация по диапазону зарплаты', () => {
-        cy.get('[data-testid="salary-min"]').type('60000');
-        cy.get('[data-testid="salary-max"]').type('90000');
-        cy.get('[data-testid="apply-filters"]').click();
-        cy.get('[data-testid="vacancy-salary"]').each($el => {
-            const salaryText = $el.text();
-            const salary = parseInt(salaryText.replace(/\D/g, ''));
-            expect(salary).to.be.at.least(60000);
-            expect(salary).to.be.at.most(90000);
-        });
-    });
+        cy.log('ввод в поиск название нужной потребности')
+        cy.get('#app > div.page > div > section > div > div.needs-block__needs-filters-wrapper > div.needs-block__filters-wrapper > div > div.filters-block__filter-list > div.search-input > div > input')
+            .click()
+            .type('Сварщик')
 
-    it('Комбинирование поиска и фильтрации', () => {
-        cy.get('[data-testid="search-input"]').type('Разработчик');
-        cy.get('[data-testid="employment-type-filter"]').select('Дистант');
-        cy.get('[data-testid="apply-filters"]').click();
-        cy.get('[data-testid="vacancy-card"]').should('have.length.gt', 0);
-        cy.get('[data-testid="vacancy-title"]').first().should('contain', 'Разработчик');
-        cy.get('[data-testid="employment-type"]').first().should('contain', 'Дистант');
-    });
+        cy.log('нажатие на кнопку лупы для нахождения')
+        cy.get('#app > div.page > div > section > div > div.needs-block__needs-filters-wrapper > div.needs-block__filters-wrapper > div > div.filters-block__filter-list > div.search-input > div > button')
+            .click({timeout:2000})
 
-    it('Успешный отклик на активную вакансию', () => {
-        cy.loginAsStudent();
-        cy.visit('/vacancies/123'); // ID существующей активной вакансии
-        cy.get('[data-testid="apply-btn"]').click();
-        cy.contains('Ваш отклик отправлен').should('be.visible');
-        cy.get('[data-testid="apply-btn"]').should('be.disabled');
-    });
+        cy.log('Нажатие на кнопку "подробнее" ')
+        cy.get('#app > div.page > div > section > div > div.needs-block__needs-filters-wrapper > div.infinite-loader.need-list > div:nth-child(1) > div.need-item__info-wrapper > div.need-item__footer-wrapper > div > div.need-footer__button-wrapper > button')
+            .click({timeout: 1000})
 
-    it('Фильтрация с некорректным диапазоном зарплаты', () => {
-        cy.get('[data-testid="salary-min"]').type('90000');
-        cy.get('[data-testid="salary-max"]').type('60000');
-        cy.get('[data-testid="apply-filters"]').click();
-        cy.contains('Минимальное значение не может быть больше максимального').should('be.visible');
-    });
+        cy.log('проверка нахождения нужной потребности')
+        cy.contains('150 лет опыта работа')
 
-    it('Попытка фильтрации архивных вакансий', () => {
-        cy.intercept('GET', '/api/vacancies?status=archived', {
-            statusCode: 403,
-            body: { error: 'Доступ запрещен' }
-        });
-        cy.visit('/vacancies?status=archived');
-        cy.contains('Нет доступа к просмотру архивных вакансий').should('be.visible');
-    });
-});
+        cy.log('возвращаемся обратно к поиску')
+        cy.visit('https://dev.profteam.su/needs')
+
+        cy.log('тыкаем разные типы зп')
+        cy.contains('По диапазону').click({timeout:3000})
+        cy.contains('По договорённости').click({timeout:3000})
+
+        cy.log('выбираем потребность по диапазоноу')
+        cy.contains('По диапазону').click({timeout:3000})
+        cy.get('#app > div.page > div > section > div > div.needs-block__needs-filters-wrapper > div.needs-block__filters-wrapper > div > div.filters-block__filter-list > div.salary-field > div:nth-child(3) > div:nth-child(2) > div > input')
+            .click().type('50000')
+        cy.get('#app > div.page > div > section > div > div.needs-block__needs-filters-wrapper > div.needs-block__filters-wrapper > div > div.filters-block__filter-list > div.search-input > div > input')
+            .click()
+            .type('Сварщик 3-5 лет опыта')
+        cy.log('Нажатие на кнопку "подробнее" ')
+        cy.get('#app > div.page > div > section > div > div.needs-block__needs-filters-wrapper > div.infinite-loader.need-list > div:nth-child(1) > div.need-item__info-wrapper > div.need-item__footer-wrapper > div > div.need-footer__button-wrapper > button')
+            .click({timeout: 3000})
+    }) //сделан
+})
